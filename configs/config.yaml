@@ -1,0 +1,57 @@
+# Training + data + model config
+defaults: []
+
+seed: 42
+precision: 32 # Changed from 16-mixed to 32 for stability
+num_workers: 8
+gpus: 1
+
+trainer:
+  max_epochs: 10
+  val_check_interval: 1.0
+  gradient_clip_val: 5.0 # Increased from 1.0
+  log_every_n_steps: 10
+  accumulate_grad_batches: 1
+
+model:
+  video_encoder_name: "MCG-NJU/videomae-base" # HF VideoMAE
+  clip_text_encoder_name: "openai/clip-vit-base-patch32"
+  freeze_video_encoder: true
+  freeze_text_encoder: true
+  video_proj_dim: 512 # project VideoMAE hidden -> text embed dim
+  diffusion:
+    timesteps: 1000
+    beta_schedule: "linear"
+    hidden_dim: 1024
+    num_layers: 4
+    dropout: 0.1
+
+optim:
+  lr: 1e-4 # Reduced from 3e-4
+  weight_decay: 0.01
+  scheduler: "cosine" # Add learning rate scheduler
+
+data:
+  dataset_name: "vatex_local" # just a tag; not used
+  split_train: "train"
+  split_val: "val"
+  frames_per_clip: 16
+  frame_size: 224
+  sample_strategy: "uniform"
+  batch_size: 4 # Reduced from 8 for stability
+  max_train_videos: 500 # Limit to 500 English videos for training
+  max_val_videos: 50 # Limit to 50 English videos for validation
+
+paths:
+  output_dir: "./outputs"
+  vatex_train_videos: "./data/vatex/videos_train"
+  vatex_val_videos: "./data/vatex/videos_val"
+  vatex_train_ann: "./data/vatex/ann/val_en.json" # Use val annotations for both
+  vatex_val_ann: "./data/vatex/ann/val_en.json"
+  vatex_features_dir: "../val" # Directory with .npy feature files
+  vatex_ann: "../data/vatex/ann/val_en.json" # Annotations for features
+
+# Hydra runtime
+hydra:
+  run:
+    dir: ${paths.output_dir}/${now:%Y%m%d_%H%M%S}
