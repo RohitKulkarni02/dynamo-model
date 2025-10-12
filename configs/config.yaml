@@ -6,6 +6,9 @@ precision: 32 # Changed from 16-mixed to 32 for stability
 num_workers: 8
 gpus: 1
 
+api:
+  key: "sk_test_4e_key"
+
 trainer:
   max_epochs: 10
   val_check_interval: 1.0
